@@ -1,0 +1,105 @@
+Timestamp,Vehicle Type,Vehicle ID,Location ID
+2025-06-21 18:50:44,car,21,Ratanada
+2025-06-21 18:50:48,car,31,Ratanada
+2025-06-21 18:50:48,car,33,Ratanada
+2025-06-21 18:50:49,car,32,Ratanada
+2025-06-21 18:50:53,car,44,Ratanada
+2025-06-21 18:50:53,car,51,Ratanada
+2025-06-21 18:50:59,car,69,Ratanada
+2025-06-21 18:50:59,car,70,Ratanada
+2025-06-21 18:51:03,car,78,Ratanada
+2025-06-21 18:51:03,car,76,Ratanada
+2025-06-21 18:51:04,car,88,Ratanada
+2025-06-21 18:51:06,car,97,Ratanada
+2025-06-21 18:51:08,car,95,Ratanada
+2025-06-21 18:51:10,car,84,Ratanada
+2025-06-21 18:51:13,car,124,Ratanada
+2025-06-21 18:51:13,car,125,Ratanada
+2025-06-21 18:51:13,car,128,Ratanada
+2025-06-21 18:51:14,car,126,Ratanada
+2025-06-21 18:51:16,car,129,Ratanada
+2025-06-21 18:51:17,car,136,Ratanada
+2025-06-21 18:51:18,car,135,Ratanada
+2025-06-21 18:51:20,car,143,Ratanada
+2025-06-21 18:51:25,car,148,Ratanada
+2025-06-21 18:51:26,car,149,Ratanada
+2025-06-21 18:51:32,car,147,Ratanada
+2025-06-21 18:51:36,car,154,Ratanada
+2025-06-21 18:51:37,car,159,Ratanada
+2025-06-21 18:51:38,car,164,Ratanada
+2025-06-21 18:51:40,car,158,Ratanada
+2025-06-21 18:55:10,car,21,Shastri Nagar
+2025-06-21 18:55:10,car,22,Shastri Nagar
+2025-06-21 18:55:13,car,42,Shastri Nagar
+2025-06-21 18:55:14,car,56,Shastri Nagar
+2025-06-21 18:55:14,car,58,Shastri Nagar
+2025-06-21 18:55:15,car,62,Shastri Nagar
+2025-06-21 18:55:15,car,63,Shastri Nagar
+2025-06-21 18:55:15,car,8,Shastri Nagar
+2025-06-21 18:55:17,car,3,Shastri Nagar
+2025-06-21 18:55:19,car,32,Shastri Nagar
+2025-06-21 18:55:20,car,102,Shastri Nagar
+2025-06-21 18:55:22,truck,122,Shastri Nagar
+2025-06-21 18:55:24,car,135,Shastri Nagar
+2025-06-21 18:55:24,car,148,Shastri Nagar
+2025-06-21 18:55:25,car,20,Shastri Nagar
+2025-06-21 18:55:25,car,15,Shastri Nagar
+2025-06-21 18:55:26,car,156,Shastri Nagar
+2025-06-21 18:55:27,car,159,Shastri Nagar
+2025-06-21 18:55:29,car,75,Shastri Nagar
+2025-06-21 18:55:33,car,54,Shastri Nagar
+2025-06-21 18:55:33,car,199,Shastri Nagar
+2025-06-21 18:55:34,car,200,Shastri Nagar
+2025-06-21 18:55:35,car,103,Shastri Nagar
+2025-06-21 18:55:37,car,227,Shastri Nagar
+2025-06-21 18:55:37,car,226,Shastri Nagar
+2025-06-21 18:55:37,car,232,Shastri Nagar
+2025-06-21 18:55:38,car,202,Shastri Nagar
+2025-06-21 18:55:38,car,235,Shastri Nagar
+2025-06-21 18:55:39,car,236,Shastri Nagar
+2025-06-21 18:55:40,car,245,Shastri Nagar
+2025-06-21 18:55:40,car,244,Shastri Nagar
+2025-06-21 18:55:41,car,243,Shastri Nagar
+2025-06-21 18:55:42,car,229,Shastri Nagar
+2025-06-21 18:55:44,car,256,Shastri Nagar
+2025-06-21 18:55:44,car,219,Shastri Nagar
+2025-06-21 18:55:45,car,262,Shastri Nagar
+2025-06-21 18:55:47,car,272,Shastri Nagar
+2025-06-21 18:55:49,car,264,Shastri Nagar
+2025-06-21 18:55:50,car,288,Shastri Nagar
+2025-06-21 18:55:50,car,297,Shastri Nagar
+2025-06-21 18:55:50,car,279,Shastri Nagar
+2025-06-21 18:55:53,car,237,Shastri Nagar
+2025-06-21 18:55:54,car,305,Shastri Nagar
+2025-06-21 18:55:55,car,295,Shastri Nagar
+2025-06-21 18:55:55,car,309,Shastri Nagar
+2025-06-21 18:55:57,car,314,Shastri Nagar
+2025-06-21 18:55:57,car,316,Shastri Nagar
+2025-06-21 18:55:59,car,329,Shastri Nagar
+2025-06-21 18:55:59,car,327,Shastri Nagar
+2025-06-21 18:56:00,car,338,Shastri Nagar
+2025-06-21 18:56:01,car,337,Shastri Nagar
+2025-06-21 18:56:01,car,339,Shastri Nagar
+2025-06-21 18:56:02,truck,347,Shastri Nagar
+2025-06-21 18:56:04,car,354,Shastri Nagar
+2025-06-21 18:56:05,car,343,Shastri Nagar
+2025-06-21 18:56:06,car,369,Shastri Nagar
+2025-06-21 18:56:07,car,376,Shastri Nagar
+2025-06-21 18:56:09,car,374,Shastri Nagar
+2025-06-21 18:56:11,car,389,Shastri Nagar
+2025-06-21 18:56:11,car,390,Shastri Nagar
+2025-06-21 18:56:11,car,393,Shastri Nagar
+2025-06-21 18:56:12,car,324,Shastri Nagar
+2025-06-21 18:59:38,car,19,Ratanada
+2025-06-21 18:59:39,car,28,Ratanada
+2025-06-21 18:59:39,car,29,Ratanada
+2025-06-21 18:59:41,car,33,Ratanada
+2025-06-21 18:59:45,car,50,Ratanada
+2025-06-21 18:59:55,car,80,Ratanada
+2025-06-21 18:59:56,truck,82,Ratanada
+2025-06-21 18:59:56,car,86,Ratanada
+2025-06-21 18:59:56,car,89,Ratanada
+2025-06-21 18:59:57,truck,25,Ratanada
+2025-06-21 18:59:59,car,41,Ratanada
+2025-06-21 19:00:00,truck,54,Ratanada
+2025-06-21 19:00:02,car,104,Ratanada

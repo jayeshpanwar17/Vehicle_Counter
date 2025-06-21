@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - {{ location_name }}</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* CSS Styles are the same as before, no changes needed here */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    header {
+      background: linear-gradient(135deg, #007BFF, #0056b3);
+      color: white;
+      padding: 1.5rem 2rem;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .dashboard {
+      padding: 2rem;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+    }
+    .card.total {
+      background: linear-gradient(135deg, #007BFF, #0056b3);
+      color: white;
+    }
+    .card h2 {
+      margin: 0;
+      font-size: 2.2rem;
+      font-weight: 600;
+    }
+    .card.total h2 {
+      color: white;
+    }
+    .card:not(.total) h2 {
+      color: #007BFF;
+    }
+    .card p {
+      margin: 0.5rem 0 0;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+    .vehicle-types {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .vehicle-card {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      text-align: center;
+      border-left: 4px solid;
+    }
+    .vehicle-card.car { border-left-color: #28A745; }
+    .vehicle-card.truck { border-left-color: #FFC107; }
+    .vehicle-card.motorcycle { border-left-color: #17A2B8; }
+    .vehicle-card h3 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+    .vehicle-card.car h3 { color: #28A745; }
+    .vehicle-card.truck h3 { color: #FFC107; }
+    .vehicle-card.motorcycle h3 { color: #17A2B8; }
+    .vehicle-card p {
+      margin: 0.5rem 0 0;
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+    .chart-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      padding: 1.5rem;
+    }
+    .chart-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+    canvas {
+      max-height: 300px;
+    }
+    .location-header {
+        font-size: 1.5rem;
+        color: #555;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    @media (max-width: 768px) {
+      .charts {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Live Vehicle Traffic Dashboard</h1>
+    <p>Monitoring Location: <strong>{{ location_name }}</strong></p>
+  </header>
+  <div class="dashboard">
+    <div class="cards">
+      <div class="card total">
+        <h2 id="totalVehicles">0</h2>
+        <p>Total Vehicles Today</p>
+      </div>
+      <div class="card">
+        <h2 id="countWeek">0</h2>
+        <p>Total This Week</p>
+      </div>
+      <div class="card">
+        <h2 id="peakHour">00:00</h2>
+        <p>Peak Hour</p>
+      </div>
+      <div class="card">
+        <h2 id="currentHourCount">0</h2>
+        <p>Current Hour Traffic</p>
+      </div>
+    </div>
+
+    <h2 style="text-align: center; margin: 2rem 0 1rem; color: #333;">Vehicle Types Today</h2>
+    <div class="vehicle-types">
+      <div class="vehicle-card car">
+        <h3 id="carCount">0</h3>
+        <p>🚗 Cars</p>
+      </div>
+      <div class="vehicle-card truck">
+        <h3 id="truckCount">0</h3>
+        <p>🚛 Trucks</p>
+      </div>
+      <div class="vehicle-card motorcycle">
+        <h3 id="motorcycleCount">0</h3>
+        <p>🏍️ Motorcycles</p>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="chart-container">
+        <div class="chart-title">Hourly Traffic Distribution</div>
+        <canvas id="hourlyChart"></canvas>
+      </div>
+      <div class="chart-container">
+        <div class="chart-title">Vehicle Types Distribution</div>
+        <canvas id="vehicleTypesChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="charts" style="margin-top: 2rem;">
+      <div class="chart-container" style="grid-column: 1 / -1;">
+        <div class="chart-title">Daily Traffic Trend (Last 7 Days)</div>
+        <canvas id="dailyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // NEW: Get the location_id from the data passed by Flask/Jinja2
+    const LOCATION_ID = "{{ location_id }}";
+    let hourlyChart, vehicleTypesChart, dailyChart;
+
+    // UPDATED: All fetch URLs now include the location_id
+    async function fetchSummary() {
+      try {
+        const res = await fetch(`/api/${LOCATION_ID}/traffic/summary`);
+        const data = await res.json();
+        
+        document.getElementById('totalVehicles').textContent = data.total_today || 0;
+        document.getElementById('countWeek').textContent = data.total_week || 0;
+        document.getElementById('peakHour').textContent = data.peak_hour || '00:00';
+        document.getElementById('currentHourCount').textContent = data.current_hour || 0;
+      } catch (error) {
+        console.error('Error fetching summary:', error);
+      }
+    }
+
+    async function fetchVehicleTypes() {
+      try {
+        const res = await fetch(`/api/${LOCATION_ID}/traffic/vehicle-types`);
+        const data = await res.json();
+        
+        document.getElementById('carCount').textContent = data.car || 0;
+        document.getElementById('truckCount').textContent = data.truck || 0;
+        document.getElementById('motorcycleCount').textContent = data.motorcycle || 0;
+      } catch (error) {
+        console.error('Error fetching vehicle types:', error);
+      }
+    }
+
+    async function drawHourlyChart() {
+      try {
+        const res = await fetch(`/api/${LOCATION_ID}/traffic/hourly`);
+        const data = await res.json();
+        const labels = Object.keys(data);
+        const counts = Object.values(data);
+
+        const ctx = document.getElementById('hourlyChart').getContext('2d');
+        if (hourlyChart) hourlyChart.destroy();
+        
+        hourlyChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Vehicles per Hour',
+              data: counts,
+              backgroundColor: 'rgba(0, 123, 255, 0.8)',
+              borderColor: '#007BFF',
+              borderWidth: 1,
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching hourly data:', error);
+      }
+    }
+
+    async function drawVehicleTypesChart() {
+      try {
+        const res = await fetch(`/api/${LOCATION_ID}/traffic/vehicle-types`);
+        const data = await res.json();
+        const labels = ['Cars', 'Trucks', 'Motorcycles'];
+        const counts = [data.car || 0, data.truck || 0, data.motorcycle || 0];
+        const colors = ['#28A745', '#FFC107', '#17A2B8'];
+
+        const ctx = document.getElementById('vehicleTypesChart').getContext('2d');
+        if (vehicleTypesChart) vehicleTypesChart.destroy();
+        
+        vehicleTypesChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels,
+            datasets: [{ data: counts, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      } catch (error) {
+        console.error('Error fetching vehicle types for chart:', error);
+      }
+    }
+
+    async function drawDailyChart() {
+  try {
+    const res = await fetch(`/api/${LOCATION_ID}/traffic/daily`);
+    const data = await res.json();
+
+    // Define the desired order of abbreviated days of the week.
+    // Ensure these match the abbreviations your API returns (e.g., 'Sun', 'Mon', 'Tue', etc.)
+    const dayOrder = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    // 1. Convert the received data object into an array of objects
+    //    where each object contains a 'day' (abbreviation) and its corresponding 'count'.
+    const dataArray = Object.keys(data).map(dayAbbr => ({
+      day: dayAbbr, // 'day' property will now hold the abbreviation (e.g., 'Fri', 'Mon')
+      count: data[dayAbbr]
+    }));
+
+    // 2. Sort the dataArray based on the custom 'dayOrder' of abbreviations.
+    dataArray.sort((a, b) => {
+      // Use the indexOf the abbreviated day in our dayOrder array for sorting
+      return dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
+    });
+
+    // 3. Extract the sorted 'labels' (abbreviated day names) and 'counts' from the sorted dataArray.
+    const labels = dataArray.map(item => item.day);
+    const counts = dataArray.map(item => item.count);
+
+    // Get the chart canvas context
+    const ctx = document.getElementById('dailyChart').getContext('2d');
+
+    // Destroy any existing chart instance to prevent memory leaks or conflicts
+    if (dailyChart) dailyChart.destroy();
+
+    // Create a new Chart.js instance with the sorted data
+    dailyChart = new Chart(ctx, {
+      type: 'line', // Line chart type
+      data: {
+        labels: labels, // Use the sorted abbreviated day labels
+        datasets: [{
+          label: 'Daily Vehicle Count', // Label for the dataset
+          data: counts, // Use the sorted counts
+          borderColor: '#28A745', // Line color (green)
+          backgroundColor: 'rgba(40, 167, 69, 0.1)', // Fill area color with some transparency
+          borderWidth: 3, // Thickness of the line
+          fill: true, // Fill the area under the line
+          tension: 0.4 // Curve tension for the line
+        }]
+      },
+      options: {
+        responsive: true, // Make the chart responsive to container size
+        maintainAspectRatio: false, // Allow chart to expand/shrink freely
+        plugins: {
+          legend: {
+            display: false // Hide the legend as there's only one dataset
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true // Ensure the Y-axis starts at zero
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching daily data:', error);
+    // You might want to display an error message on the UI here
+  }
+}
+
+    async function refreshAll() {
+      await Promise.all([
+        fetchSummary(),
+        fetchVehicleTypes(),
+        drawHourlyChart(),
+        drawVehicleTypesChart(),
+        drawDailyChart()
+      ]);
+    }
+
+    // Initialize and auto-refresh dashboard
+    refreshAll();
+    setInterval(refreshAll, 5000);
+  </script>
+</body>
+</html>
