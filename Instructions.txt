@@ -1,0 +1,76 @@
+# Vehicle Counter Project – Setup Instructions
+
+## Folder Structure
+
+Make sure all files and folders are placed inside one main folder. Recommended name:
+vehicle_counter_project/
+
+The folder should contain the following:
+
+├── app.py
+├── backend.py
+├── yolov8n.pt
+├── current_camera_location.txt
+├── templates/
+│   ├── selection.html
+│   └── dashboard.html
+
+If any file is missing or outside this structure, the project may not work as expected.
+
+---
+
+## ⚙️ Setup Instructions
+
+1. Make sure Python is installed on your system (Python 3.8+ recommended).
+
+2. Open terminal or command prompt and navigate to the project folder.
+   Example:
+   - On Windows:
+     cd Desktop\vehicle_counter_project
+   - On Linux/Mac:
+     cd ~/Desktop/vehicle_counter_project
+
+3. (Optional but recommended) Create a virtual environment:
+   python -m venv venv
+   venv\Scripts\activate  (Windows)
+   source venv/bin/activate (Linux/Mac)
+
+4. Install dependencies:
+   pip install flask opencv-python ultralytics numpy
+
+---
+
+## 🏁 Running the Project
+
+⚠️ Follow this order:
+
+### Step 1: Start the vehicle detection system
+
+Run this in terminal:
+python backend.py
+
+- This will start capturing the video feed
+- Vehicles will be detected and counted
+- Data will be stored in a database and a CSV log
+
+### Step 2: Start the dashboard (Flask app)
+
+In a new terminal window/tab, run:
+python app.py
+
+- A browser window will open
+- Choose a location
+- View real-time traffic dashboard
+
+---
+
+## 💡 Notes
+
+- Make sure `yolov8n.pt` is in the same folder as `backend.py`
+- `current_camera_location.txt` will be updated when you select a location in the dashboard
+- SQLite database `vehicle_data.db` will be created automatically if it doesn't exist
+- Logs are saved in the `logs/` folder
+
+---
+
+✅ Project is now ready.
