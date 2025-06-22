@@ -215,7 +215,7 @@ if __name__ == "__main__":
 
     # Initialize the location config file with a default or clear it
     if not os.path.exists(LOCATION_CONFIG_FILE):
-        write_current_location_to_file(LOCATIONS["jodhpur"]["name"]) # Or any default
+        write_current_location_to_file(LOCATIONS["Ratanada"]["name"]) # Or any default
     else:
         # Optionally clear or set to a known state on app startup
         pass
