@@ -7,23 +7,18 @@ import os
 import signal
 import sys
 import sqlite3
-import time # Import time for sleep
+import time
 
 # === Configuration ===
-# Define the path for the file that holds the current active camera location ID
 LOCATION_CONFIG_FILE = "current_camera_location.txt"
-# Default location if the config file is not found or empty
-DEFAULT_CAMERA_LOCATION_ID = "jodhpur" 
-
-# Initialize CAMERA_LOCATION_ID, will be updated periodically
+DEFAULT_CAMERA_LOCATION_ID = "Basni crossing"
 CAMERA_LOCATION_ID = DEFAULT_CAMERA_LOCATION_ID
 
-webcam_index = "http://192.168.31.90:8080/video"
+rtsp_url = "rtsp://admin:suncity%4013@192.168.1.203:554/cam/realmonitor?channel=1&subtype=0"
 model_path = "yolov8n.pt"
-count_line_position = 270
+count_line_position = 470
 offset = 20
 
-# Function to read the current camera location from the config file
 def read_current_location():
     global CAMERA_LOCATION_ID
     try:
@@ -35,35 +30,26 @@ def read_current_location():
                     CAMERA_LOCATION_ID = new_location
     except Exception as e:
         print(f"⚠️ Error reading location config file: {e}")
-    # Ensure it's never empty
     if not CAMERA_LOCATION_ID:
         CAMERA_LOCATION_ID = DEFAULT_CAMERA_LOCATION_ID
 
-# === Initialize YOLOv8 Model ===
+# === Initialize Model ===
 model = YOLO(model_path)
 
-# === Initialize Webcam Capture ===
-cap = cv2.VideoCapture(webcam_index)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-
-# === Logging Setup ===
+# === Init CSV & DB ===
 count_cars = count_bikes = count_trucks = 0
 counted_ids = set()
 
 if not os.path.exists("logs"):
     os.makedirs("logs")
 
-# Single CSV filename for all locations
 CSV_FILENAME = "logs/vehicle_log_all.csv"
-# Check if CSV file exists to write header only once
 file_exists = os.path.exists(CSV_FILENAME)
 csv_file = open(CSV_FILENAME, mode='a', newline='')
 csv_writer = csv.writer(csv_file)
 if not file_exists or os.path.getsize(CSV_FILENAME) == 0:
     csv_writer.writerow(["Timestamp", "Vehicle Type", "Vehicle ID", "Location ID"])
 
-# === Connect to SQLite ===
 db_conn = sqlite3.connect("vehicle_data.db", check_same_thread=False)
 db_cursor = db_conn.cursor()
 db_cursor.execute("""
@@ -89,28 +75,42 @@ def cleanup(*args):
 signal.signal(signal.SIGINT, cleanup)
 signal.signal(signal.SIGTERM, cleanup)
 
-# Initial read of location
+# === Camera Init ===
+def init_camera():
+    cap = cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
+    cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    return cap
+
+cap = init_camera()
 read_current_location()
 
-# === Main Loop ===
 frame_count = 0
 last_location_check_time = time.time()
-LOCATION_CHECK_INTERVAL = 5 # Check for location update every 5 seconds
+LOCATION_CHECK_INTERVAL = 5
 
+# === Main Loop ===
 while True:
-    # Periodically check for location updates from the file
     current_time = time.time()
     if current_time - last_location_check_time >= LOCATION_CHECK_INTERVAL:
         read_current_location()
         last_location_check_time = current_time
 
+    for _ in range(2):  # skip stale frames
+        cap.grab()
+
     ret, frame = cap.read()
-    if not ret:
-        print(f"❌ Failed to grab frame from webcam_index {webcam_index}. Retrying...")
+
+    if not ret or frame is None or frame.shape[0] == 0:
+        print("⚠️ Empty/corrupted frame, trying to reconnect...")
+        cap.release()
+        time.sleep(1)
+        cap = init_camera()
         continue
 
     frame_count += 1
-    if frame_count % 2 != 0: # Process every other frame
+    if frame_count % 2 != 0:  # process every 4th frame
         continue
 
     results = model.track(frame, persist=True, conf=0.5, tracker="bytetrack.yaml")
@@ -137,9 +137,8 @@ while True:
                     counted_ids.add(box_id)
                     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                    # Log with the currently active CAMERA_LOCATION_ID
                     csv_writer.writerow([timestamp, label, int(box_id), CAMERA_LOCATION_ID])
-                    csv_file.flush() # Ensure data is written to disk immediately
+                    csv_file.flush()
 
                     db_cursor.execute(
                         "INSERT INTO vehicles (timestamp, vehicle_type, vehicle_id, location_id) VALUES (?, ?, ?, ?)",
@@ -157,10 +156,9 @@ while True:
                         count_trucks += 1
 
     cv2.line(frame, (0, count_line_position), (frame.shape[1], count_line_position), (0, 0, 255), 2)
-
     cv2.putText(frame, f"Cars: {count_cars} | Bikes: {count_bikes} | Trucks: {count_trucks}",
                 (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
     cv2.imshow("Vehicle Detection & Counting (Webcam)", frame)
-    if cv2.waitKey(1) == 27:  # ESC to quit
+    if cv2.waitKey(1) == 27:
         cleanup()
