@@ -16,7 +16,8 @@ LOCATION_CONFIG_FILE = "current_camera_location.txt"
 DEFAULT_CAMERA_LOCATION_ID = "Basni crossing"
 CAMERA_LOCATION_ID = DEFAULT_CAMERA_LOCATION_ID
 
-rtsp_url = "http://192.168.31.90:8080/video"  # Change as needed
+# Updated RTSP URL for CP Plus camera
+rtsp_url = "rtsp://admin:suncity%4013@192.168.1.203:554/cam/realmonitor?channel=1&subtype=0"
 model_path = "yolov8n.pt"
 count_line_position = 470
 offset = 20
@@ -25,6 +26,7 @@ offset = 20
 latest_frame = None
 frame_lock = Lock()
 camera_active = False
+cap = None  # Add global cap variable
 
 # === YOLO Model Load ===
 model = YOLO(model_path)
@@ -58,28 +60,86 @@ db_conn.commit()
 
 # === Graceful Shutdown ===
 def cleanup(*args):
-    global camera_active
+    global camera_active, cap
     camera_active = False
     print("\n🔻 Exiting... Saving data.")
-    csv_file.close()
-    cap.release()
-    db_conn.close()
-    cv2.destroyAllWindows()
+    
+    try:
+        csv_file.close()
+        print("✅ CSV file closed")
+    except Exception as e:
+        print(f"⚠️ Error closing CSV file: {e}")
+    
+    # Only try to release cap if it exists
+    if cap is not None:
+        try:
+            cap.release()
+            print("✅ Camera released")
+        except Exception as e:
+            print(f"⚠️ Error releasing camera: {e}")
+    
+    try:
+        db_conn.close()
+        print("✅ Database connection closed")
+    except Exception as e:
+        print(f"⚠️ Error closing database: {e}")
+    
+    try:
+        cv2.destroyAllWindows()
+        print("✅ OpenCV windows closed")
+    except Exception as e:
+        print(f"⚠️ Error closing OpenCV windows: {e}")
+    
+    print("👋 Cleanup complete. Exiting...")
     sys.exit(0)
 
 signal.signal(signal.SIGINT, cleanup)
 signal.signal(signal.SIGTERM, cleanup)
 
-# === Camera Init Function ===
+# === Enhanced Camera Init Function for RTSP ===
 def init_camera():
-    if rtsp_url.startswith("http"):
+    print(f"🎥 Initializing camera with URL: {rtsp_url}")
+    
+    if rtsp_url.startswith("rtsp://"):
+        # For RTSP streams (CP Plus camera)
+        cap = cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Reduce buffer to minimize latency
+        cap.set(cv2.CAP_PROP_FPS, 25)        # Set FPS to match camera
+        
+        # Timeout settings for RTSP
+        cap.set(cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 10000)   # 10 seconds connection timeout
+        cap.set(cv2.CAP_PROP_READ_TIMEOUT_MSEC, 5000)    # 5 seconds read timeout
+        
+        # Optional: Set codec for better performance
+        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('H', '2', '6', '4'))
+        
+        # Reduce latency settings
+        cap.set(cv2.CAP_PROP_PROBESIZE, 1024)
+        cap.set(cv2.CAP_PROP_MAX_DELAY, 1)
+        
+        print("✅ RTSP camera configuration applied")
+        
+    elif rtsp_url.startswith("http"):
+        # For HTTP streams (IP cameras)
         cap = cv2.VideoCapture(rtsp_url)
         cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        print("✅ HTTP camera configuration applied")
+        
     else:
+        # For other sources (local cameras, etc.)
         cap = cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
         cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        print("✅ Generic camera configuration applied")
+    
+    # Test if camera opened successfully
+    if not cap.isOpened():
+        print("❌ Failed to open camera")
+        return None
+    else:
+        print("✅ Camera opened successfully")
+    
     return cap
 
 # === Location Reader ===
@@ -107,47 +167,91 @@ def is_camera_active():
     global camera_active
     return camera_active
 
-# === Main Detection Loop ===
+# === Enhanced Main Detection Loop ===
 def run_detection_loop():
     global cap, camera_active, frame_count, last_location_check_time
     global count_cars, count_bikes, count_trucks
+    
+    # Initialize camera
     cap = init_camera()
+    if cap is None:
+        print("❌ Failed to initialize camera. Exiting...")
+        return
+    
     read_current_location()
 
     frame_count = 0
     last_location_check_time = time.time()
     camera_active = True
+    connection_retry_count = 0
+    max_retries = 5
+
+    print("🚀 Starting vehicle detection loop...")
 
     while True:
         current_time = time.time()
+        
+        # Check location every 5 seconds
         if current_time - last_location_check_time >= 5:
             read_current_location()
             last_location_check_time = current_time
 
-        if rtsp_url.startswith("http"):
+        # Enhanced frame reading based on stream type
+        if rtsp_url.startswith("rtsp://"):
+            # For RTSP streams, read frame directly
+            ret, frame = cap.read()
+        elif rtsp_url.startswith("http"):
+            # For HTTP streams
             ret, frame = cap.read()
         else:
+            # For other sources, use buffer clearing
             for _ in range(2):
                 cap.grab()
             ret, frame = cap.read()
 
-        if not ret or frame is None or frame.shape[0] == 0:
-            print("⚠️ Empty/corrupted frame, trying to reconnect...")
+        # Handle frame reading errors
+        if not ret or frame is None or frame.size == 0:
+            print(f"⚠️ Frame reading failed. Retry count: {connection_retry_count}")
             camera_active = False
-            cap.release()
-            time.sleep(2)
-            cap = init_camera()
-            camera_active = True
+            
+            connection_retry_count += 1
+            if connection_retry_count >= max_retries:
+                print("❌ Max retries reached. Attempting to reinitialize camera...")
+                cap.release()
+                time.sleep(5)  # Wait before reconnecting
+                cap = init_camera()
+                if cap is None:
+                    print("❌ Camera reinitialization failed. Exiting...")
+                    break
+                connection_retry_count = 0
+            else:
+                time.sleep(2)  # Short wait before retry
             continue
 
+        # Reset retry count on successful frame read
+        if connection_retry_count > 0:
+            print("✅ Camera connection restored")
+            connection_retry_count = 0
+        
+        camera_active = True
+
+        # Skip every other frame for performance (optional)
         frame_count += 1
         if frame_count % 2 != 0:
             continue
 
+        # Create a copy for display
         display_frame = frame.copy()
-        results = model.track(display_frame, persist=True, conf=0.5, tracker="bytetrack.yaml")
+        
+        # Run YOLO detection
+        try:
+            results = model.track(display_frame, persist=True, conf=0.5, tracker="bytetrack.yaml")
+        except Exception as e:
+            print(f"⚠️ YOLO detection error: {e}")
+            continue
 
-        if results[0].boxes.id is not None:
+        # Process detections
+        if results[0].boxes is not None and results[0].boxes.id is not None:
             boxes = results[0].boxes
             ids = boxes.id.cpu().numpy()
             classes = boxes.cls.cpu().numpy()
@@ -159,27 +263,44 @@ def run_detection_loop():
                 center_y = int((y1 + y2) / 2)
                 label = model.names[int(cls)]
 
+                # Only process vehicles with high confidence
                 if label in ["car", "motorcycle", "truck"] and conf > 0.5:
+                    # Draw bounding box
                     cv2.rectangle(display_frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
-                    cv2.putText(display_frame, f"{label}-{int(box_id)}", (int(x1), int(y1) - 10),
+                    
+                    # Draw label with confidence
+                    label_text = f"{label}-{int(box_id)} ({conf:.2f})"
+                    cv2.putText(display_frame, label_text, (int(x1), int(y1) - 10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
 
+                    # Check if vehicle crossed the counting line
                     if (count_line_position - offset < center_y < count_line_position + offset and
                             box_id not in counted_ids):
+                        
+                        # Add to counted IDs
                         counted_ids.add(box_id)
                         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                        csv_writer.writerow([timestamp, label, int(box_id), CAMERA_LOCATION_ID])
-                        csv_file.flush()
+                        # Log to CSV
+                        try:
+                            csv_writer.writerow([timestamp, label, int(box_id), CAMERA_LOCATION_ID])
+                            csv_file.flush()
+                        except Exception as e:
+                            print(f"⚠️ CSV logging error: {e}")
 
-                        db_cursor.execute(
-                            "INSERT INTO vehicles (timestamp, vehicle_type, vehicle_id, location_id) VALUES (?, ?, ?, ?)",
-                            (timestamp, label, int(box_id), CAMERA_LOCATION_ID)
-                        )
-                        db_conn.commit()
+                        # Log to database
+                        try:
+                            db_cursor.execute(
+                                "INSERT INTO vehicles (timestamp, vehicle_type, vehicle_id, location_id) VALUES (?, ?, ?, ?)",
+                                (timestamp, label, int(box_id), CAMERA_LOCATION_ID)
+                            )
+                            db_conn.commit()
+                        except Exception as e:
+                            print(f"⚠️ Database logging error: {e}")
 
                         print(f"✔ Counted {label}-{int(box_id)} at {timestamp} for location {CAMERA_LOCATION_ID}")
 
+                        # Update counters
                         if label == "car":
                             count_cars += 1
                         elif label == "motorcycle":
@@ -187,20 +308,53 @@ def run_detection_loop():
                         elif label == "truck":
                             count_trucks += 1
 
-        cv2.line(display_frame, (0, count_line_position), (display_frame.shape[1], count_line_position), (0, 0, 255), 2)
+        # Draw counting line
+        cv2.line(display_frame, (0, count_line_position), (display_frame.shape[1], count_line_position), (0, 0, 255), 3)
+        cv2.putText(display_frame, "COUNTING LINE", (10, count_line_position - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+
+        # Display counts
         cv2.putText(display_frame, f"Cars: {count_cars} | Bikes: {count_bikes} | Trucks: {count_trucks}",
                     (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
+        # Display location
         cv2.putText(display_frame, f"Location: {CAMERA_LOCATION_ID}",
-                    (20, display_frame.shape[0] - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+                    (20, display_frame.shape[0] - 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
+        # Display camera status
+        status_text = "LIVE" if camera_active else "RECONNECTING"
+        status_color = (0, 255, 0) if camera_active else (0, 165, 255)
+        cv2.putText(display_frame, status_text, (display_frame.shape[1] - 100, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, status_color, 2)
+
+        # Update the latest frame for streaming
         with frame_lock:
             latest_frame = display_frame.copy()
 
-        cv2.imshow("Vehicle Detection & Counting (Webcam)", display_frame)
-        if cv2.waitKey(1) == 27:
+        # Display the frame
+        cv2.imshow("Vehicle Detection & Counting (CP Plus Camera)", display_frame)
+        
+        # Check for exit key (ESC)
+        key = cv2.waitKey(1) & 0xFF
+        if key == 27:  # ESC key
+            print("🔻 ESC key pressed. Exiting...")
             cleanup()
+
+    # Cleanup if loop exits
+    cleanup()
 
 # === Run detection only if backend.py is run directly ===
 if __name__ == "__main__":
-    run_detection_loop()
+    print("🚀 Starting CP Plus Camera Vehicle Detection System")
+    print(f"📹 Camera URL: {rtsp_url}")
+    print("Press ESC to exit")
+    print("-" * 60)
+    
+    try:
+        run_detection_loop()
+    except KeyboardInterrupt:
+        print("\n🔻 Keyboard interrupt received")
+        cleanup()
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        cleanup()
