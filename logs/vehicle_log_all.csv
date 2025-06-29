@@ -1,105 +1,253 @@
 Timestamp,Vehicle Type,Vehicle ID,Location ID
-2025-06-21 18:50:44,car,21,Ratanada
-2025-06-21 18:50:48,car,31,Ratanada
-2025-06-21 18:50:48,car,33,Ratanada
-2025-06-21 18:50:49,car,32,Ratanada
-2025-06-21 18:50:53,car,44,Ratanada
-2025-06-21 18:50:53,car,51,Ratanada
-2025-06-21 18:50:59,car,69,Ratanada
-2025-06-21 18:50:59,car,70,Ratanada
-2025-06-21 18:51:03,car,78,Ratanada
-2025-06-21 18:51:03,car,76,Ratanada
-2025-06-21 18:51:04,car,88,Ratanada
-2025-06-21 18:51:06,car,97,Ratanada
-2025-06-21 18:51:08,car,95,Ratanada
-2025-06-21 18:51:10,car,84,Ratanada
-2025-06-21 18:51:13,car,124,Ratanada
-2025-06-21 18:51:13,car,125,Ratanada
-2025-06-21 18:51:13,car,128,Ratanada
-2025-06-21 18:51:14,car,126,Ratanada
-2025-06-21 18:51:16,car,129,Ratanada
-2025-06-21 18:51:17,car,136,Ratanada
-2025-06-21 18:51:18,car,135,Ratanada
-2025-06-21 18:51:20,car,143,Ratanada
-2025-06-21 18:51:25,car,148,Ratanada
-2025-06-21 18:51:26,car,149,Ratanada
-2025-06-21 18:51:32,car,147,Ratanada
-2025-06-21 18:51:36,car,154,Ratanada
-2025-06-21 18:51:37,car,159,Ratanada
-2025-06-21 18:51:38,car,164,Ratanada
-2025-06-21 18:51:40,car,158,Ratanada
-2025-06-21 18:55:10,car,21,Shastri Nagar
-2025-06-21 18:55:10,car,22,Shastri Nagar
-2025-06-21 18:55:13,car,42,Shastri Nagar
-2025-06-21 18:55:14,car,56,Shastri Nagar
-2025-06-21 18:55:14,car,58,Shastri Nagar
-2025-06-21 18:55:15,car,62,Shastri Nagar
-2025-06-21 18:55:15,car,63,Shastri Nagar
-2025-06-21 18:55:15,car,8,Shastri Nagar
-2025-06-21 18:55:17,car,3,Shastri Nagar
-2025-06-21 18:55:19,car,32,Shastri Nagar
-2025-06-21 18:55:20,car,102,Shastri Nagar
-2025-06-21 18:55:22,truck,122,Shastri Nagar
-2025-06-21 18:55:24,car,135,Shastri Nagar
-2025-06-21 18:55:24,car,148,Shastri Nagar
-2025-06-21 18:55:25,car,20,Shastri Nagar
-2025-06-21 18:55:25,car,15,Shastri Nagar
-2025-06-21 18:55:26,car,156,Shastri Nagar
-2025-06-21 18:55:27,car,159,Shastri Nagar
-2025-06-21 18:55:29,car,75,Shastri Nagar
-2025-06-21 18:55:33,car,54,Shastri Nagar
-2025-06-21 18:55:33,car,199,Shastri Nagar
-2025-06-21 18:55:34,car,200,Shastri Nagar
-2025-06-21 18:55:35,car,103,Shastri Nagar
-2025-06-21 18:55:37,car,227,Shastri Nagar
-2025-06-21 18:55:37,car,226,Shastri Nagar
-2025-06-21 18:55:37,car,232,Shastri Nagar
-2025-06-21 18:55:38,car,202,Shastri Nagar
-2025-06-21 18:55:38,car,235,Shastri Nagar
-2025-06-21 18:55:39,car,236,Shastri Nagar
-2025-06-21 18:55:40,car,245,Shastri Nagar
-2025-06-21 18:55:40,car,244,Shastri Nagar
-2025-06-21 18:55:41,car,243,Shastri Nagar
-2025-06-21 18:55:42,car,229,Shastri Nagar
-2025-06-21 18:55:44,car,256,Shastri Nagar
-2025-06-21 18:55:44,car,219,Shastri Nagar
-2025-06-21 18:55:45,car,262,Shastri Nagar
-2025-06-21 18:55:47,car,272,Shastri Nagar
-2025-06-21 18:55:49,car,264,Shastri Nagar
-2025-06-21 18:55:50,car,288,Shastri Nagar
-2025-06-21 18:55:50,car,297,Shastri Nagar
-2025-06-21 18:55:50,car,279,Shastri Nagar
-2025-06-21 18:55:53,car,237,Shastri Nagar
-2025-06-21 18:55:54,car,305,Shastri Nagar
-2025-06-21 18:55:55,car,295,Shastri Nagar
-2025-06-21 18:55:55,car,309,Shastri Nagar
-2025-06-21 18:55:57,car,314,Shastri Nagar
-2025-06-21 18:55:57,car,316,Shastri Nagar
-2025-06-21 18:55:59,car,329,Shastri Nagar
-2025-06-21 18:55:59,car,327,Shastri Nagar
-2025-06-21 18:56:00,car,338,Shastri Nagar
-2025-06-21 18:56:01,car,337,Shastri Nagar
-2025-06-21 18:56:01,car,339,Shastri Nagar
-2025-06-21 18:56:02,truck,347,Shastri Nagar
-2025-06-21 18:56:04,car,354,Shastri Nagar
-2025-06-21 18:56:05,car,343,Shastri Nagar
-2025-06-21 18:56:06,car,369,Shastri Nagar
-2025-06-21 18:56:07,car,376,Shastri Nagar
-2025-06-21 18:56:09,car,374,Shastri Nagar
-2025-06-21 18:56:11,car,389,Shastri Nagar
-2025-06-21 18:56:11,car,390,Shastri Nagar
-2025-06-21 18:56:11,car,393,Shastri Nagar
-2025-06-21 18:56:12,car,324,Shastri Nagar
-2025-06-21 18:59:38,car,19,Ratanada
-2025-06-21 18:59:39,car,28,Ratanada
-2025-06-21 18:59:39,car,29,Ratanada
-2025-06-21 18:59:41,car,33,Ratanada
-2025-06-21 18:59:45,car,50,Ratanada
-2025-06-21 18:59:55,car,80,Ratanada
-2025-06-21 18:59:56,truck,82,Ratanada
-2025-06-21 18:59:56,car,86,Ratanada
-2025-06-21 18:59:56,car,89,Ratanada
-2025-06-21 18:59:57,truck,25,Ratanada
-2025-06-21 18:59:59,car,41,Ratanada
-2025-06-21 19:00:00,truck,54,Ratanada
-2025-06-21 19:00:02,car,104,Ratanada
+2025-06-27 17:35:49,car,225,Basni Crossing
+2025-06-27 17:36:04,car,296,Basni Crossing
+2025-06-27 17:36:31,car,243,Basni Crossing
+2025-06-29 00:40:27,car,165,Rai ka bagh crossing
+2025-06-29 00:40:30,car,180,Rai ka bagh crossing
+2025-06-29 00:40:30,car,181,Rai ka bagh crossing
+2025-06-29 00:40:37,car,200,Rai ka bagh crossing
+2025-06-29 00:40:40,car,213,Rai ka bagh crossing
+2025-06-29 00:40:44,car,229,Rai ka bagh crossing
+2025-06-29 00:40:47,car,237,Rai ka bagh crossing
+2025-06-29 00:40:48,car,197,Rai ka bagh crossing
+2025-06-29 00:40:49,car,243,Rai ka bagh crossing
+2025-06-29 00:40:51,car,253,Rai ka bagh crossing
+2025-06-29 00:40:51,car,256,Rai ka bagh crossing
+2025-06-29 00:40:51,car,254,Rai ka bagh crossing
+2025-06-29 00:40:52,car,251,Rai ka bagh crossing
+2025-06-29 00:40:54,car,268,Rai ka bagh crossing
+2025-06-29 00:40:55,car,277,Rai ka bagh crossing
+2025-06-29 00:40:56,car,275,Rai ka bagh crossing
+2025-06-29 00:41:03,car,304,Rai ka bagh crossing
+2025-06-29 00:41:03,car,303,Rai ka bagh crossing
+2025-06-29 00:42:33,car,327,Rai ka bagh crossing
+2025-06-29 00:42:34,car,329,Rai ka bagh crossing
+2025-06-29 00:42:46,car,383,Rai ka bagh crossing
+2025-06-29 00:42:47,car,381,Rai ka bagh crossing
+2025-06-29 00:42:47,car,382,Rai ka bagh crossing
+2025-06-29 00:42:47,car,397,Rai ka bagh crossing
+2025-06-29 00:42:48,car,395,Rai ka bagh crossing
+2025-06-29 00:42:51,car,413,Rai ka bagh crossing
+2025-06-29 00:42:59,car,425,Rai ka bagh crossing
+2025-06-29 00:49:04,car,25,Rai ka bagh crossing
+2025-06-29 00:49:07,car,33,Rai ka bagh crossing
+2025-06-29 00:49:10,car,42,Rai ka bagh crossing
+2025-06-29 00:49:11,car,44,Rai ka bagh crossing
+2025-06-29 00:49:19,car,72,Rai ka bagh crossing
+2025-06-29 00:49:20,car,65,Rai ka bagh crossing
+2025-06-29 00:49:23,car,84,Rai ka bagh crossing
+2025-06-29 00:49:23,car,85,Rai ka bagh crossing
+2025-06-29 00:49:28,car,101,Rai ka bagh crossing
+2025-06-29 00:49:29,car,111,Rai ka bagh crossing
+2025-06-29 00:49:36,car,125,Rai ka bagh crossing
+2025-06-29 00:49:37,car,127,Rai ka bagh crossing
+2025-06-29 14:16:34,car,107,Rai ka bagh crossing
+2025-06-29 14:16:34,car,53,Rai ka bagh crossing
+2025-06-29 14:16:42,car,130,Rai ka bagh crossing
+2025-06-29 14:16:44,car,191,Rai ka bagh crossing
+2025-06-29 14:16:44,car,143,Rai ka bagh crossing
+2025-06-29 14:16:45,car,200,Rai ka bagh crossing
+2025-06-29 14:16:56,car,259,Rai ka bagh crossing
+2025-06-29 14:16:59,car,285,Rai ka bagh crossing
+2025-06-29 14:17:00,truck,265,Rai ka bagh crossing
+2025-06-29 14:17:05,car,312,Rai ka bagh crossing
+2025-06-29 14:17:21,car,394,Rai ka bagh crossing
+2025-06-29 14:17:24,car,417,Rai ka bagh crossing
+2025-06-29 14:17:27,car,430,Rai ka bagh crossing
+2025-06-29 14:17:30,car,451,Rai ka bagh crossing
+2025-06-29 14:17:31,car,383,Rai ka bagh crossing
+2025-06-29 14:17:34,car,429,Rai ka bagh crossing
+2025-06-29 14:17:40,car,490,Rai ka bagh crossing
+2025-06-29 14:17:41,car,484,Rai ka bagh crossing
+2025-06-29 14:17:42,car,506,Rai ka bagh crossing
+2025-06-29 14:17:43,car,491,Rai ka bagh crossing
+2025-06-29 14:17:44,car,515,Rai ka bagh crossing
+2025-06-29 14:17:45,car,516,Rai ka bagh crossing
+2025-06-29 14:17:47,car,492,Rai ka bagh crossing
+2025-06-29 14:17:49,car,505,Rai ka bagh crossing
+2025-06-29 14:17:51,car,533,Rai ka bagh crossing
+2025-06-29 14:17:59,car,550,Rai ka bagh crossing
+2025-06-29 14:17:59,car,574,Rai ka bagh crossing
+2025-06-29 14:18:01,car,551,Rai ka bagh crossing
+2025-06-29 14:18:05,car,619,Rai ka bagh crossing
+2025-06-29 14:18:07,car,604,Rai ka bagh crossing
+2025-06-29 14:18:07,car,629,Rai ka bagh crossing
+2025-06-29 14:18:10,car,576,Rai ka bagh crossing
+2025-06-29 14:18:12,car,603,Rai ka bagh crossing
+2025-06-29 14:18:13,car,564,Rai ka bagh crossing
+2025-06-29 14:18:13,truck,656,Rai ka bagh crossing
+2025-06-29 14:18:17,car,607,Rai ka bagh crossing
+2025-06-29 14:18:18,car,682,Rai ka bagh crossing
+2025-06-29 14:18:19,car,615,Rai ka bagh crossing
+2025-06-29 14:18:21,car,698,Rai ka bagh crossing
+2025-06-29 14:18:23,car,664,Rai ka bagh crossing
+2025-06-29 14:18:26,car,699,Rai ka bagh crossing
+2025-06-29 14:18:28,car,726,Rai ka bagh crossing
+2025-06-29 14:18:31,car,720,Rai ka bagh crossing
+2025-06-29 14:18:38,car,781,Rai ka bagh crossing
+2025-06-29 14:18:41,car,801,Rai ka bagh crossing
+2025-06-29 14:18:43,car,552,Rai ka bagh crossing
+2025-06-29 14:18:44,car,773,Rai ka bagh crossing
+2025-06-29 14:18:46,car,815,Rai ka bagh crossing
+2025-06-29 14:18:47,car,824,Rai ka bagh crossing
+2025-06-29 14:18:48,car,827,Rai ka bagh crossing
+2025-06-29 14:18:48,car,835,Rai ka bagh crossing
+2025-06-29 14:18:50,car,809,Rai ka bagh crossing
+2025-06-29 14:18:53,car,828,Rai ka bagh crossing
+2025-06-29 14:18:56,car,876,Rai ka bagh crossing
+2025-06-29 14:19:00,car,889,Rai ka bagh crossing
+2025-06-29 14:19:00,car,896,Rai ka bagh crossing
+2025-06-29 14:19:04,car,905,Rai ka bagh crossing
+2025-06-29 14:19:05,car,869,Rai ka bagh crossing
+2025-06-29 14:19:10,car,956,Rai ka bagh crossing
+2025-06-29 14:19:11,car,870,Rai ka bagh crossing
+2025-06-29 14:19:14,car,967,Rai ka bagh crossing
+2025-06-29 14:19:15,car,894,Rai ka bagh crossing
+2025-06-29 14:19:17,car,949,Rai ka bagh crossing
+2025-06-29 14:19:18,car,944,Rai ka bagh crossing
+2025-06-29 14:19:20,car,941,Rai ka bagh crossing
+2025-06-29 14:19:20,truck,979,Rai ka bagh crossing
+2025-06-29 14:19:23,car,969,Rai ka bagh crossing
+2025-06-29 14:19:27,car,986,Rai ka bagh crossing
+2025-06-29 14:19:28,car,1007,Rai ka bagh crossing
+2025-06-29 14:19:30,car,957,Rai ka bagh crossing
+2025-06-29 14:19:30,car,1040,Rai ka bagh crossing
+2025-06-29 14:19:35,car,1054,Rai ka bagh crossing
+2025-06-29 14:19:37,car,1076,Rai ka bagh crossing
+2025-06-29 14:19:40,car,1074,Rai ka bagh crossing
+2025-06-29 14:19:42,car,1114,Rai ka bagh crossing
+2025-06-29 14:19:43,car,1089,Rai ka bagh crossing
+2025-06-29 14:19:45,car,1121,Rai ka bagh crossing
+2025-06-29 14:19:45,car,1119,Rai ka bagh crossing
+2025-06-29 14:19:47,car,1052,Rai ka bagh crossing
+2025-06-29 14:19:47,car,1043,Rai ka bagh crossing
+2025-06-29 14:19:48,car,1039,Rai ka bagh crossing
+2025-06-29 14:19:54,car,1151,Rai ka bagh crossing
+2025-06-29 14:19:55,car,1108,Rai ka bagh crossing
+2025-06-29 14:19:59,car,1159,Rai ka bagh crossing
+2025-06-29 14:20:09,car,1236,Rai ka bagh crossing
+2025-06-29 14:20:11,car,1239,Rai ka bagh crossing
+2025-06-29 14:20:11,car,1221,Rai ka bagh crossing
+2025-06-29 14:20:13,car,1244,Rai ka bagh crossing
+2025-06-29 14:20:19,car,1261,Rai ka bagh crossing
+2025-06-29 14:20:23,car,1275,Rai ka bagh crossing
+2025-06-29 14:20:24,car,1290,Rai ka bagh crossing
+2025-06-29 14:20:26,car,1295,Rai ka bagh crossing
+2025-06-29 14:20:29,car,1237,Rai ka bagh crossing
+2025-06-29 14:20:35,car,1316,Rai ka bagh crossing
+2025-06-29 14:20:39,car,1273,Rai ka bagh crossing
+2025-06-29 14:20:42,car,1287,Rai ka bagh crossing
+2025-06-29 14:20:53,car,1377,Rai ka bagh crossing
+2025-06-29 14:20:53,car,1375,Rai ka bagh crossing
+2025-06-29 14:20:54,car,1313,Rai ka bagh crossing
+2025-06-29 14:21:04,car,1417,Rai ka bagh crossing
+2025-06-29 14:21:17,motorcycle,1341,Rai ka bagh crossing
+2025-06-29 14:39:24,car,54,Basni Crossing
+2025-06-29 14:39:25,car,50,Basni Crossing
+2025-06-29 14:39:26,car,44,Basni Crossing
+2025-06-29 14:39:59,car,149,Basni Crossing
+2025-06-29 14:40:08,car,147,Basni Crossing
+2025-06-29 14:40:09,car,134,Basni Crossing
+2025-06-29 14:40:14,car,186,Basni Crossing
+2025-06-29 14:40:20,car,223,Basni Crossing
+2025-06-29 14:40:24,car,219,Basni Crossing
+2025-06-29 14:40:26,car,203,Basni Crossing
+2025-06-29 14:40:36,car,272,Basni Crossing
+2025-06-29 14:40:40,car,279,Basni Crossing
+2025-06-29 14:40:41,car,237,Basni Crossing
+2025-06-29 14:40:44,car,292,Basni Crossing
+2025-06-29 14:40:53,car,332,Basni Crossing
+2025-06-29 14:40:56,car,312,Basni Crossing
+2025-06-29 14:40:56,car,289,Basni Crossing
+2025-06-29 14:41:02,car,346,Basni Crossing
+2025-06-29 14:41:03,car,348,Basni Crossing
+2025-06-29 14:41:06,truck,333,Basni Crossing
+2025-06-29 14:41:07,car,340,Basni Crossing
+2025-06-29 14:41:11,truck,368,Basni Crossing
+2025-06-29 14:41:12,car,390,Basni Crossing
+2025-06-29 14:41:13,car,353,Basni Crossing
+2025-06-29 14:41:15,car,402,Basni Crossing
+2025-06-29 14:41:16,car,412,Basni Crossing
+2025-06-29 14:41:19,car,413,Basni Crossing
+2025-06-29 14:41:19,car,393,Basni Crossing
+2025-06-29 14:41:20,car,347,Basni Crossing
+2025-06-29 14:41:24,truck,455,Basni Crossing
+2025-06-29 14:41:26,car,444,Basni Crossing
+2025-06-29 14:41:27,car,461,Basni Crossing
+2025-06-29 14:41:29,car,457,Basni Crossing
+2025-06-29 14:41:31,car,480,Basni Crossing
+2025-06-29 14:41:33,car,481,Basni Crossing
+2025-06-29 14:41:35,car,436,Basni Crossing
+2025-06-29 14:41:36,car,458,Basni Crossing
+2025-06-29 14:41:36,car,465,Basni Crossing
+2025-06-29 14:41:39,car,468,Basni Crossing
+2025-06-29 14:41:42,car,514,Basni Crossing
+2025-06-29 14:41:44,car,507,Basni Crossing
+2025-06-29 14:41:44,car,508,Basni Crossing
+2025-06-29 14:41:45,car,510,Basni Crossing
+2025-06-29 14:41:48,car,526,Basni Crossing
+2025-06-29 14:41:48,car,527,Basni Crossing
+2025-06-29 14:41:50,car,525,Basni Crossing
+2025-06-29 14:41:51,car,523,Basni Crossing
+2025-06-29 14:41:54,car,543,Basni Crossing
+2025-06-29 14:41:55,car,504,Basni Crossing
+2025-06-29 14:41:56,car,546,Basni Crossing
+2025-06-29 14:41:58,car,569,Basni Crossing
+2025-06-29 14:41:59,car,561,Basni Crossing
+2025-06-29 14:42:00,car,562,Basni Crossing
+2025-06-29 14:42:02,car,575,Basni Crossing
+2025-06-29 14:42:03,car,571,Basni Crossing
+2025-06-29 14:42:05,car,532,Basni Crossing
+2025-06-29 14:42:07,car,547,Basni Crossing
+2025-06-29 14:42:07,car,576,Basni Crossing
+2025-06-29 14:42:08,car,586,Basni Crossing
+2025-06-29 14:42:10,car,585,Basni Crossing
+2025-06-29 14:42:11,car,593,Basni Crossing
+2025-06-29 14:42:15,car,583,Basni Crossing
+2025-06-29 14:42:15,truck,564,Basni Crossing
+2025-06-29 14:42:16,truck,538,Basni Crossing
+2025-06-29 14:42:22,car,631,Basni Crossing
+2025-06-29 14:42:34,car,632,Basni Crossing
+2025-06-29 14:42:35,car,633,Basni Crossing
+2025-06-29 14:42:36,car,682,Basni Crossing
+2025-06-29 14:42:36,car,687,Basni Crossing
+2025-06-29 14:42:39,car,708,Basni Crossing
+2025-06-29 14:42:40,car,686,Basni Crossing
+2025-06-29 14:42:41,car,654,Basni Crossing
+2025-06-29 14:42:46,car,709,Basni Crossing
+2025-06-29 14:42:46,car,689,Basni Crossing
+2025-06-29 14:42:52,car,727,Basni Crossing
+2025-06-29 14:42:54,car,766,Basni Crossing
+2025-06-29 14:42:55,car,768,Basni Crossing
+2025-06-29 14:42:56,car,757,Basni Crossing
+2025-06-29 14:42:58,car,767,Basni Crossing
+2025-06-29 14:43:01,car,788,Basni Crossing
+2025-06-29 14:43:03,car,793,Basni Crossing
+2025-06-29 14:43:05,car,794,Basni Crossing
+2025-06-29 14:43:06,truck,805,Basni Crossing
+2025-06-29 14:43:08,car,817,Basni Crossing
+2025-06-29 14:43:12,car,813,Basni Crossing
+2025-06-29 14:43:18,car,860,Basni Crossing
+2025-06-29 14:43:21,car,856,Basni Crossing
+2025-06-29 14:43:23,car,857,Basni Crossing
+2025-06-29 14:43:35,car,903,Basni Crossing
+2025-06-29 14:43:38,car,924,Basni Crossing
+2025-06-29 14:43:42,car,938,Basni Crossing
+2025-06-29 14:43:45,car,933,Basni Crossing
+2025-06-29 14:43:47,car,957,Basni Crossing
+2025-06-29 14:43:49,truck,925,Basni Crossing
+2025-06-29 14:43:50,car,963,Basni Crossing
+2025-06-29 14:43:50,car,964,Basni Crossing
+2025-06-29 14:43:54,truck,979,Basni Crossing
+2025-06-29 14:43:59,truck,973,Basni Crossing
+2025-06-29 14:44:02,truck,995,Basni Crossing
+2025-06-29 14:44:03,car,996,Basni Crossing
+2025-06-29 14:44:03,car,1005,Basni Crossing
+2025-06-29 14:44:06,car,1010,Basni Crossing
+2025-06-29 14:44:06,car,1011,Basni Crossing
+2025-06-29 14:44:11,car,1020,Basni Crossing
+2025-06-29 14:44:14,car,1022,Basni Crossing
+2025-06-29 14:44:19,car,1034,Basni Crossing
+2025-06-29 14:44:20,car,1042,Basni Crossing
+2025-06-29 14:44:22,car,1058,Basni Crossing
+2025-06-29 14:44:22,car,1060,Basni Crossing
