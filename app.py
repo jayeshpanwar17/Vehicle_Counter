@@ -1,10 +1,21 @@
-from flask import Flask, render_template, request, jsonify, url_for, redirect
+from flask import Flask, render_template, request, jsonify, url_for, redirect, Response
 import sqlite3
 import socket
 import webbrowser
 import threading
 import datetime
 import os # Import os for file operations
+import cv2
+import sys
+
+# === NEW: Import backend functions ===
+try:
+    # Import the frame streaming functions from backend
+    sys.path.append('.')
+    import backend
+except ImportError:
+    print("⚠️ Warning: Could not import backend.py. Live streaming will not work.")
+    backend = None
 
 print("✅ Running the correct app.py from vehicle_counter")
 
@@ -12,9 +23,9 @@ app = Flask(__name__)
 
 # === Define available locations ===
 LOCATIONS = {
-    "Kudi": {"name": "Kudi, Jodhpur"},
-    "Shastri Nagar": {"name": "Shastri Nagar, Jodhpur"},
-    "Ratanada": {"name": "Ratanada, Jodhpur"}
+    "Basni Crossing": {"name": "Basni Crossing, Jodhpur"},
+    "Bhagat ki kothi crossing": {"name": "Bhagat ki kothi crossing, Jodhpur"},
+    "Rai ka bagh crossing": {"name": "Rai ka bagh crossing, Jodhpur"}
 }
 
 # Define the path for the file that holds the current active camera location ID
@@ -47,6 +58,61 @@ def write_current_location_to_file(location_id):
     except Exception as e:
         print(f"❌ Error writing location config file: {e}")
 
+# === NEW: Live streaming functions ===
+def generate_frames():
+    """Generate frames for MJPEG streaming."""
+    if backend is None:
+        # Return a placeholder frame if backend is not available
+        placeholder = "Backend not available"
+        while True:
+            # Create a simple text frame
+            frame = cv2.imread('placeholder.jpg') if os.path.exists('placeholder.jpg') else None
+            if frame is None:
+                # Create a black frame with text
+                frame = cv2.zeros((480, 640, 3), dtype=cv2.uint8)
+                cv2.putText(frame, placeholder, (50, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            
+            ret, buffer = cv2.imencode('.jpg', frame)
+            if ret:
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+    else:
+        while True:
+            try:
+                # Get the latest processed frame from backend
+                frame = backend.get_latest_frame()
+                
+                if frame is not None:
+                    # Encode frame as JPEG
+                    ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+                    if ret:
+                        yield (b'--frame\r\n'
+                               b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+                else:
+                    # If no frame available, create a "No Signal" frame
+                    no_signal_frame = cv2.zeros((480, 640, 3), dtype=cv2.uint8)
+                    cv2.putText(no_signal_frame, "No Signal - Camera Connecting...", 
+                              (50, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+                    ret, buffer = cv2.imencode('.jpg', no_signal_frame)
+                    if ret:
+                        yield (b'--frame\r\n'
+                               b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+                
+                # Small delay to prevent overwhelming the system
+                threading.Event().wait(0.033)  # ~30 FPS
+                
+            except Exception as e:
+                print(f"❌ Error in frame generation: {e}")
+                # Create error frame
+                error_frame = cv2.zeros((480, 640, 3), dtype=cv2.uint8)
+                cv2.putText(error_frame, f"Error: {str(e)[:50]}", 
+                          (50, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+                ret, buffer = cv2.imencode('.jpg', error_frame)
+                if ret:
+                    yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+                threading.Event().wait(1)  # Wait longer on error
+
 # === Root route now shows the location selection page ===
 @app.route("/")
 def select_location():
@@ -65,7 +131,6 @@ def set_active_location(location_id):
     # Redirect to the dashboard for the selected location
     return redirect(url_for('dashboard', location_id=location_id))
 
-
 # === Dashboard is now location-specific ===
 @app.route("/dashboard/<location_id>")
 def dashboard(location_id):
@@ -76,7 +141,165 @@ def dashboard(location_id):
     location_name = LOCATIONS[location_id]["name"]
     return render_template("dashboard.html", location_id=location_id, location_name=location_name)
 
-# === ALL API ENDPOINTS REMAIN THE SAME, using location_id from URL ===
+# === NEW: Live streaming routes ===
+@app.route("/live-feed")
+def live_feed():
+    """MJPEG streaming route."""
+    return Response(generate_frames(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route("/video")
+def video_page():
+    """Simple HTML page to display the live video feed."""
+    camera_status = "Active" if backend and backend.is_camera_active() else "Inactive"
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Live Vehicle Detection Feed</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #1a1a1a;
+                color: white;
+                text-align: center;
+            }}
+            .container {{
+                max-width: 900px;
+                margin: 0 auto;
+            }}
+            .video-container {{
+                margin: 20px 0;
+                border: 3px solid #333;
+                border-radius: 10px;
+                overflow: hidden;
+                background-color: #000;
+            }}
+            .video-feed {{
+                width: 100%;
+                max-width: 640px;
+                height: auto;
+                display: block;
+            }}
+            .info-panel {{
+                background-color: #2a2a2a;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 20px 0;
+                text-align: left;
+            }}
+            .status {{
+                display: inline-block;
+                padding: 5px 15px;
+                border-radius: 20px;
+                font-weight: bold;
+                margin-left: 10px;
+            }}
+            .status.active {{
+                background-color: #28a745;
+                color: white;
+            }}
+            .status.inactive {{
+                background-color: #dc3545;
+                color: white;
+            }}
+            .nav-links {{
+                margin: 20px 0;
+            }}
+            .nav-links a {{
+                color: #007bff;
+                text-decoration: none;
+                margin: 0 15px;
+                padding: 10px 20px;
+                border: 1px solid #007bff;
+                border-radius: 5px;
+                transition: all 0.3s;
+            }}
+            .nav-links a:hover {{
+                background-color: #007bff;
+                color: white;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🚗 Live Vehicle Detection Feed</h1>
+            
+            <div class="info-panel">
+                <p><strong>Camera Status:</strong> 
+                   <span class="status {'active' if camera_status == 'Active' else 'inactive'}">
+                       {camera_status}
+                   </span>
+                </p>
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li>Real-time YOLOv8 object detection</li>
+                    <li>Vehicle counting (cars, motorcycles, trucks)</li>
+                    <li>Live bounding boxes and tracking IDs</li>
+                    <li>Location-based processing</li>
+                </ul>
+            </div>
+
+            <div class="video-container">
+                <img src="/live-feed" alt="Live Vehicle Detection Feed" class="video-feed" id="videoFeed">
+            </div>
+
+            <div class="nav-links">
+                <a href="/">🏠 Home</a>
+                <a href="javascript:location.reload()">🔄 Refresh</a>
+                <a href="javascript:toggleFullscreen()">📺 Fullscreen</a>
+            </div>
+
+            <div class="info-panel">
+                <p><em>The feed shows live vehicle detection with bounding boxes, vehicle counts, and the counting line. 
+                Detected vehicles crossing the red line are automatically logged to the database.</em></p>
+            </div>
+        </div>
+
+        <script>
+            function toggleFullscreen() {{
+                const video = document.getElementById('videoFeed');
+                if (video.requestFullscreen) {{
+                    video.requestFullscreen();
+                }} else if (video.webkitRequestFullscreen) {{
+                    video.webkitRequestFullscreen();
+                }} else if (video.msRequestFullscreen) {{
+                    video.msRequestFullscreen();
+                }}
+            }}
+
+            // Auto-refresh page if video fails to load
+            document.getElementById('videoFeed').onerror = function() {{
+                console.log('Video feed error, refreshing in 5 seconds...');
+                setTimeout(() => location.reload(), 5000);
+            }};
+        </script>
+    </body>
+    </html>
+    """
+    return html_content
+
+# === NEW: Camera status API endpoint ===
+@app.route("/api/camera/status")
+def camera_status_api():
+    """API endpoint to check camera status."""
+    if backend:
+        status = {
+            "active": backend.is_camera_active(),
+            "message": "Camera is active" if backend.is_camera_active() else "Camera is inactive"
+        }
+    else:
+        status = {
+            "active": False,
+            "message": "Backend not available"
+        }
+    return jsonify(status)
+
+# === ALL EXISTING API ENDPOINTS REMAIN THE SAME ===
 
 @app.route("/api/<location_id>/traffic/summary")
 def summary_data(location_id):
@@ -208,14 +431,17 @@ def open_browser(url):
 
 if __name__ == "__main__":
     init_database()
-    port = find_free_port()
+    port = 5000
     url = f"http://127.0.0.1:{port}"
     print(f"\n🚀 Running Dashboard Frontend on {url}")
     print("   Please open the link above to select a location.")
+    print(f"🎥 Live video feed available at: {url}/video")
+    print(f"📡 Live MJPEG stream at: {url}/live-feed")
 
     # Initialize the location config file with a default or clear it
     if not os.path.exists(LOCATION_CONFIG_FILE):
-        write_current_location_to_file(LOCATIONS["Ratanada"]["name"]) # Or any default
+        # Fix: Use a valid location key from LOCATIONS
+        write_current_location_to_file("Basni Crossing")
     else:
         # Optionally clear or set to a known state on app startup
         pass
