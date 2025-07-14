@@ -1,76 +1,107 @@
-# Vehicle Counter Project – Setup Instructions
+# Vehicle Counter System - Setup Instructions
 
-## Folder Structure
+## 📋 Project Overview
 
-Make sure all files and folders are placed inside one main folder. Recommended name:
-vehicle_counter_project/
+Real-time vehicle detection and counting system using YOLOv8 with web dashboard for traffic monitoring across multiple locations.
 
-The folder should contain the following:
+## 🗂️ File Structure
 
-├── app.py
-├── backend.py
-├── yolov8n.pt
-├── current_camera_location.txt
-├── templates/
-│   ├── selection.html
-│   └── dashboard.html
+```
+vehicle_counter/
+├── app.py                    # Flask web application
+├── backend.py                # Vehicle detection script
+├── templates/                # Flask templates folder
+│   ├── dashboard.html        # Main dashboard
+│   └── selection.html        # Location selection page
+├── yolov8m.pt               # YOLOv8 model (download required)
+├── clip.mp4                 # Video file for detection
+├── vehicle_data.db          # SQLite database (auto-created)
+├── current_camera_location.txt # Location config (auto-created)
+└── vehicle_log_from_video.csv # CSV backup (auto-created)
+```
 
-If any file is missing or outside this structure, the project may not work as expected.
+## 🚀 Quick Setup
 
----
+### 1. Install Dependencies
+```bash
+pip install flask opencv-python ultralytics numpy torch
+```
 
-## ⚙️ Setup Instructions
+### 2. Create Templates Folder
+```bash
+mkdir templates
+mv dashboard.html templates/
+mv selection.html templates/
+```
 
-1. Make sure Python is installed on your system (Python 3.8+ recommended).
+### 3. Download YOLOv8 Model
+- Download `yolov8m.pt` from https://github.com/ultralytics/ultralytics
+- Place in project directory
 
-2. Open terminal or command prompt and navigate to the project folder.
-   Example:
-   - On Windows:
-     cd Desktop\vehicle_counter_project
-   - On Linux/Mac:
-     cd ~/Desktop/vehicle_counter_project
+### 4. Prepare Video File
+- Place your video file as `clip.mp4` in project directory
+- OR update `VIDEO_PATH` in `backend.py`
 
-3. (Optional but recommended) Create a virtual environment:
-   python -m venv venv
-   venv\Scripts\activate  (Windows)
-   source venv/bin/activate (Linux/Mac)
-
-4. Install dependencies:
-   pip install flask opencv-python ultralytics numpy
-
----
-
-## 🏁 Running the Project
-
-⚠️ Follow this order:
-
-### Step 1: Start the vehicle detection system
-
-Run this in terminal:
-python backend.py
-
-- This will start capturing the video feed
-- Vehicles will be detected and counted
-- Data will be stored in a database and a CSV log
-
-### Step 2: Start the dashboard (Flask app)
-
-In a new terminal window/tab, run:
+### 5. Run the System
+```bash
+# Terminal 1 - Dashboard
 python app.py
 
-- A browser window will open
-- Choose a location
-- View real-time traffic dashboard
+# Terminal 2 - Detection
+python backend.py
+```
+
+## 📖 Usage
+
+1. **Start Dashboard**: Run `python app.py`
+2. **Open Browser**: Go to `http://127.0.0.1:5000`
+3. **Select Location**: Choose from available locations
+4. **Start Detection**: Run `python backend.py` in separate terminal
+5. **View Results**: Dashboard updates automatically
+
+## 🔧 Configuration
+
+### Video Settings (backend.py)
+```python
+VIDEO_PATH = r"clip.mp4"
+LINE_START = (100, 180)  # Detection line start
+LINE_END = (700, 50)     # Detection line end
+```
+
+### Locations (app.py)
+```python
+LOCATIONS = {
+    "Basni Crossing": {"name": "Basni Crossing, Jodhpur"},
+    "Bhagat ki kothi crossing": {"name": "Bhagat ki kothi crossing, Jodhpur"},
+    "Rai ka bagh crossing": {"name": "Rai ka bagh crossing, Jodhpur"}
+}
+```
+
+## 🔧 Troubleshooting
+
+- **No module errors**: Install missing packages with pip
+- **Templates not found**: Ensure HTML files are in `templates/` folder
+- **Video not loading**: Check file path and format
+- **Database errors**: Delete `vehicle_data.db` and restart
+- **Port in use**: Change port in `app.py`
+
+## 🌐 Network Access
+
+For local network access:
+```python
+app.run(host='0.0.0.0', port=5000)
+```
+Access via: `http://YOUR_LOCAL_IP:5000`
+
+## 📊 Features
+
+- Real-time vehicle counting
+- Multi-location support
+- Date range filtering
+- Vehicle type classification
+- Traffic analytics dashboard
+- SQLite database storage
 
 ---
 
-## 💡 Notes
-
-- Make sure `yolov8n.pt` is in the same folder as `backend.py`
-- `current_camera_location.txt` will be updated when you select a location in the dashboard
-- SQLite database `vehicle_data.db` will be created automatically if it doesn't exist
-- Logs are saved in the `logs/` folder
-
----
-
-✅ Project is now ready.
+**Ready to monitor traffic! 🚗📊**
