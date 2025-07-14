@@ -129,12 +129,20 @@
   <header>
     <h1>Live Vehicle Traffic Dashboard</h1>
     <p>Monitoring Location: <strong>{{ location_name }}</strong></p>
+    <!-- Date Range Picker -->
+    <div style="margin-top: 1rem; text-align: center;">
+      <label for="dateStart">From: </label>
+      <input type="date" id="dateStart" name="dateStart" style="margin-right: 1rem;">
+      <label for="dateEnd">To: </label>
+      <input type="date" id="dateEnd" name="dateEnd">
+      <button id="applyDateRange" style="margin-left: 1rem; padding: 0.3rem 1rem; border-radius: 5px; border: none; background: #007BFF; color: white; cursor: pointer;">Apply</button>
+    </div>
   </header>
   <div class="dashboard">
     <div class="cards">
       <div class="card total">
         <h2 id="totalVehicles">0</h2>
-        <p>Total Vehicles Today</p>
+        <p>Total Vehicles <span id="dateRangeLabel">Today</span></p>
       </div>
       <div class="card">
         <h2 id="countWeek">0</h2>
@@ -144,9 +152,11 @@
         <h2 id="peakHour">00:00</h2>
         <p>Peak Hour</p>
       </div>
-      <div class="card">
+      <div class="card" style="position: relative;">
         <h2 id="currentHourCount">0</h2>
         <p>Current Hour Traffic</p>
+        <!-- Congestion Badge -->
+        <span id="congestionBadge" style="position: absolute; top: 1rem; right: 1rem; padding: 0.3rem 0.7rem; border-radius: 12px; font-size: 0.9rem; font-weight: 600; color: white; background: #28A745;">Low</span>
       </div>
     </div>
 
@@ -190,16 +200,67 @@
     const LOCATION_ID = "{{ location_id }}";
     let hourlyChart, vehicleTypesChart, dailyChart;
 
-    // UPDATED: All fetch URLs now include the location_id
+    // Date range state
+    let dateStart = null;
+    let dateEnd = null;
+
+    // Helper: Format date as yyyy-mm-dd
+    function formatDate(date) {
+      return date.toISOString().split('T')[0];
+    }
+
+    // Helper: Update date range label
+    function updateDateRangeLabel() {
+      const label = document.getElementById('dateRangeLabel');
+      if (!dateStart && !dateEnd) {
+        label.textContent = 'Today';
+      } else if (dateStart && dateEnd) {
+        label.textContent = `${dateStart} to ${dateEnd}`;
+      } else if (dateStart) {
+        label.textContent = `From ${dateStart}`;
+      } else if (dateEnd) {
+        label.textContent = `Up to ${dateEnd}`;
+      }
+    }
+
+    // Helper: Get query string for date range
+    function getDateQuery() {
+      let params = [];
+      if (dateStart) params.push(`start=${dateStart}`);
+      if (dateEnd) params.push(`end=${dateEnd}`);
+      return params.length ? '?' + params.join('&') : '';
+    }
+
+    // Congestion thresholds (customize as needed)
+    const CONGESTION_THRESHOLDS = {
+      low: 20,    // <= 20 vehicles/hour
+      medium: 50  // <= 50 vehicles/hour
+      // >50 is high
+    };
+
+    function updateCongestionBadge(currentHourCount) {
+      const badge = document.getElementById('congestionBadge');
+      let level = 'Low', color = '#28A745';
+      if (currentHourCount > CONGESTION_THRESHOLDS.medium) {
+        level = 'High'; color = '#DC3545';
+      } else if (currentHourCount > CONGESTION_THRESHOLDS.low) {
+        level = 'Medium'; color = '#FFC107';
+      }
+      badge.textContent = level;
+      badge.style.background = color;
+      badge.style.color = (level === 'Medium') ? '#333' : 'white';
+    }
+
+    // UPDATED: All fetch URLs now include the location_id and date range
     async function fetchSummary() {
       try {
-        const res = await fetch(`/api/${LOCATION_ID}/traffic/summary`);
+        const res = await fetch(`/api/${LOCATION_ID}/traffic/summary${getDateQuery()}`);
         const data = await res.json();
-        
         document.getElementById('totalVehicles').textContent = data.total_today || 0;
         document.getElementById('countWeek').textContent = data.total_week || 0;
         document.getElementById('peakHour').textContent = data.peak_hour || '00:00';
         document.getElementById('currentHourCount').textContent = data.current_hour || 0;
+        updateCongestionBadge(data.current_hour || 0);
       } catch (error) {
         console.error('Error fetching summary:', error);
       }
@@ -207,9 +268,8 @@
 
     async function fetchVehicleTypes() {
       try {
-        const res = await fetch(`/api/${LOCATION_ID}/traffic/vehicle-types`);
+        const res = await fetch(`/api/${LOCATION_ID}/traffic/vehicle-types${getDateQuery()}`);
         const data = await res.json();
-        
         document.getElementById('carCount').textContent = data.car || 0;
         document.getElementById('truckCount').textContent = data.truck || 0;
         document.getElementById('motorcycleCount').textContent = data.motorcycle || 0;
@@ -220,14 +280,12 @@
 
     async function drawHourlyChart() {
       try {
-        const res = await fetch(`/api/${LOCATION_ID}/traffic/hourly`);
+        const res = await fetch(`/api/${LOCATION_ID}/traffic/hourly${getDateQuery()}`);
         const data = await res.json();
         const labels = Object.keys(data);
         const counts = Object.values(data);
-
         const ctx = document.getElementById('hourlyChart').getContext('2d');
         if (hourlyChart) hourlyChart.destroy();
-        
         hourlyChart = new Chart(ctx, {
           type: 'bar',
           data: {
@@ -244,7 +302,11 @@
           options: {
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true } }
+            scales: { y: { beginAtZero: true } },
+            animation: {
+              duration: 1200,
+              easing: 'easeOutQuart'
+            }
           }
         });
       } catch (error) {
@@ -254,22 +316,28 @@
 
     async function drawVehicleTypesChart() {
       try {
-        const res = await fetch(`/api/${LOCATION_ID}/traffic/vehicle-types`);
+        const res = await fetch(`/api/${LOCATION_ID}/traffic/vehicle-types${getDateQuery()}`);
         const data = await res.json();
         const labels = ['Cars', 'Trucks', 'Motorcycles'];
         const counts = [data.car || 0, data.truck || 0, data.motorcycle || 0];
         const colors = ['#28A745', '#FFC107', '#17A2B8'];
-
         const ctx = document.getElementById('vehicleTypesChart').getContext('2d');
         if (vehicleTypesChart) vehicleTypesChart.destroy();
-        
         vehicleTypesChart = new Chart(ctx, {
           type: 'doughnut',
           data: {
             labels,
             datasets: [{ data: counts, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }]
           },
-          options: { responsive: true, maintainAspectRatio: false }
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            animation: {
+              animateRotate: true,
+              animateScale: true,
+              duration: 1200,
+              easing: 'easeOutQuart'
+            }
+          }
         });
       } catch (error) {
         console.error('Error fetching vehicle types for chart:', error);
@@ -277,72 +345,54 @@
     }
 
     async function drawDailyChart() {
-  try {
-    const res = await fetch(`/api/${LOCATION_ID}/traffic/daily`);
-    const data = await res.json();
-
-    // Define the desired order of abbreviated days of the week.
-    // Ensure these match the abbreviations your API returns (e.g., 'Sun', 'Mon', 'Tue', etc.)
-    const dayOrder = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-    // 1. Convert the received data object into an array of objects
-    //    where each object contains a 'day' (abbreviation) and its corresponding 'count'.
-    const dataArray = Object.keys(data).map(dayAbbr => ({
-      day: dayAbbr, // 'day' property will now hold the abbreviation (e.g., 'Fri', 'Mon')
-      count: data[dayAbbr]
-    }));
-
-    // 2. Sort the dataArray based on the custom 'dayOrder' of abbreviations.
-    dataArray.sort((a, b) => {
-      // Use the indexOf the abbreviated day in our dayOrder array for sorting
-      return dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
-    });
-
-    // 3. Extract the sorted 'labels' (abbreviated day names) and 'counts' from the sorted dataArray.
-    const labels = dataArray.map(item => item.day);
-    const counts = dataArray.map(item => item.count);
-
-    // Get the chart canvas context
-    const ctx = document.getElementById('dailyChart').getContext('2d');
-
-    // Destroy any existing chart instance to prevent memory leaks or conflicts
-    if (dailyChart) dailyChart.destroy();
-
-    // Create a new Chart.js instance with the sorted data
-    dailyChart = new Chart(ctx, {
-      type: 'line', // Line chart type
-      data: {
-        labels: labels, // Use the sorted abbreviated day labels
-        datasets: [{
-          label: 'Daily Vehicle Count', // Label for the dataset
-          data: counts, // Use the sorted counts
-          borderColor: '#28A745', // Line color (green)
-          backgroundColor: 'rgba(40, 167, 69, 0.1)', // Fill area color with some transparency
-          borderWidth: 3, // Thickness of the line
-          fill: true, // Fill the area under the line
-          tension: 0.4 // Curve tension for the line
-        }]
-      },
-      options: {
-        responsive: true, // Make the chart responsive to container size
-        maintainAspectRatio: false, // Allow chart to expand/shrink freely
-        plugins: {
-          legend: {
-            display: false // Hide the legend as there's only one dataset
+      try {
+        const res = await fetch(`/api/${LOCATION_ID}/traffic/daily${getDateQuery()}`);
+        const data = await res.json();
+        const dayOrder = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dataArray = Object.keys(data).map(dayAbbr => ({
+          day: dayAbbr,
+          count: data[dayAbbr]
+        }));
+        dataArray.sort((a, b) => {
+          return dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
+        });
+        const labels = dataArray.map(item => item.day);
+        const counts = dataArray.map(item => item.count);
+        const ctx = document.getElementById('dailyChart').getContext('2d');
+        if (dailyChart) dailyChart.destroy();
+        dailyChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Daily Vehicle Count',
+              data: counts,
+              borderColor: '#28A745',
+              backgroundColor: 'rgba(40, 167, 69, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: { beginAtZero: true }
+            },
+            animation: {
+              duration: 1200,
+              easing: 'easeOutQuart'
+            }
           }
-        },
-        scales: {
-          y: {
-            beginAtZero: true // Ensure the Y-axis starts at zero
-          }
-        }
+        });
+      } catch (error) {
+        console.error('Error fetching daily data:', error);
       }
-    });
-  } catch (error) {
-    console.error('Error fetching daily data:', error);
-    // You might want to display an error message on the UI here
-  }
-}
+    }
 
     async function refreshAll() {
       await Promise.all([
@@ -352,10 +402,26 @@
         drawVehicleTypesChart(),
         drawDailyChart()
       ]);
+      updateDateRangeLabel();
     }
 
-    // Initialize and auto-refresh dashboard
-    refreshAll();
+    // Date picker event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set default dates to today
+      const today = new Date();
+      document.getElementById('dateStart').value = formatDate(today);
+      document.getElementById('dateEnd').value = formatDate(today);
+      dateStart = formatDate(today);
+      dateEnd = formatDate(today);
+      updateDateRangeLabel();
+      refreshAll();
+    });
+    document.getElementById('applyDateRange').addEventListener('click', function() {
+      dateStart = document.getElementById('dateStart').value;
+      dateEnd = document.getElementById('dateEnd').value;
+      refreshAll();
+    });
+    // Auto-refresh every 5 seconds
     setInterval(refreshAll, 5000);
   </script>
 </body>
