@@ -12,9 +12,9 @@ app = Flask(__name__)
 
 # === Define available locations ===
 LOCATIONS = {
-    "Kudi": {"name": "Kudi, Jodhpur"},
-    "Shastri Nagar": {"name": "Shastri Nagar, Jodhpur"},
-    "Ratanada": {"name": "Ratanada, Jodhpur"}
+    "Basni Crossing": {"name": "Basni Crossing, Jodhpur"},
+    "Bhagat ki kothi crossing": {"name": "Bhagat ki kothi crossing, Jodhpur"},
+    "Rai ka bagh crossing": {"name": "Rai ka bagh crossing, Jodhpur"}
 }
 
 # Define the path for the file that holds the current active camera location ID
@@ -76,45 +76,98 @@ def dashboard(location_id):
     location_name = LOCATIONS[location_id]["name"]
     return render_template("dashboard.html", location_id=location_id, location_name=location_name)
 
-# === ALL API ENDPOINTS REMAIN THE SAME, using location_id from URL ===
+# === ALL API ENDPOINTS WITH DATE RANGE SUPPORT ===
 
 @app.route("/api/<location_id>/traffic/summary")
 def summary_data(location_id):
     now = datetime.datetime.now()
     conn = sqlite3.connect("vehicle_data.db")
     cursor = conn.cursor()
-    today = now.strftime("%Y-%m-%d")
-    week_start = (now - datetime.timedelta(days=now.weekday())).strftime("%Y-%m-%d")
+    
+    # Get date range parameters
+    start_date = request.args.get("start")
+    end_date = request.args.get("end")
+    
+    # If no date range provided, use today
+    if not start_date and not end_date:
+        today = now.strftime("%Y-%m-%d")
+        start_date = today
+        end_date = today
+    elif start_date and not end_date:
+        end_date = start_date
+    elif end_date and not start_date:
+        start_date = end_date
+    
+    # Default to today if still no dates
+    if not start_date:
+        today = now.strftime("%Y-%m-%d")
+        start_date = today
+        end_date = today
+    
+    # Ensure we have valid string values (not None)
+    assert start_date is not None and end_date is not None
 
     summary = {"total_today": 0, "total_week": 0, "peak_hour": "00:00", "current_hour": 0}
 
-    # Today's total
-    cursor.execute("SELECT COUNT(*) FROM vehicles WHERE DATE(timestamp) = ? AND location_id = ? AND vehicle_type != 'bus'", (today, location_id))
+    # Total for date range (replaces "total_today")
+    cursor.execute("""
+        SELECT COUNT(*) FROM vehicles 
+        WHERE DATE(timestamp) BETWEEN ? AND ? 
+        AND location_id = ? AND vehicle_type != 'bus'
+    """, (start_date, end_date, location_id))
     result = cursor.fetchone()
     summary["total_today"] = result[0] if result else 0
 
-    # Week's total
-    cursor.execute("SELECT COUNT(*) FROM vehicles WHERE DATE(timestamp) >= ? AND location_id = ? AND vehicle_type != 'bus'", (week_start, location_id))
+    # Week's total (keep as is for now, could be modified to show week containing the date range)
+    week_start = (now - datetime.timedelta(days=now.weekday())).strftime("%Y-%m-%d")
+    cursor.execute("""
+        SELECT COUNT(*) FROM vehicles 
+        WHERE DATE(timestamp) >= ? AND location_id = ? AND vehicle_type != 'bus'
+    """, (week_start, location_id))
     result = cursor.fetchone()
     summary["total_week"] = result[0] if result else 0
 
-    # Peak hour
+    # Peak hour for the date range
     cursor.execute("""
         SELECT strftime('%H', timestamp), COUNT(*) FROM vehicles
-        WHERE DATE(timestamp) = ? AND location_id = ? AND vehicle_type != 'bus'
+        WHERE DATE(timestamp) BETWEEN ? AND ? AND location_id = ? AND vehicle_type != 'bus'
         GROUP BY strftime('%H', timestamp)
         ORDER BY COUNT(*) DESC LIMIT 1
-    """, (today, location_id))
+    """, (start_date, end_date, location_id))
     row = cursor.fetchone()
     if row:
         summary["peak_hour"] = f"{int(row[0]):02d}:00"
 
-    # Current hour count
-    current_hour = now.strftime("%H")
+    # Current hour count logic
+    if end_date >= now.strftime("%Y-%m-%d"):
+        # If range includes today, show current hour of today
+        current_hour = now.strftime("%H")
+        current_date = now.strftime("%Y-%m-%d")
+        summary["current_hour_label"] = f"Current Hour ({current_hour}:00)"
+    else:
+        # For historical data, show the peak hour of the selected range
+        cursor.execute("""
+            SELECT strftime('%H', timestamp), COUNT(*) FROM vehicles
+            WHERE DATE(timestamp) BETWEEN ? AND ? AND location_id = ? AND vehicle_type != 'bus'
+            GROUP BY strftime('%H', timestamp)
+            ORDER BY COUNT(*) DESC LIMIT 1
+        """, (start_date, end_date, location_id))
+        peak_row = cursor.fetchone()
+        
+        if peak_row:
+            current_hour = peak_row[0]
+            current_date = end_date  # Use last day in range for display
+            summary["current_hour_label"] = f"Peak Hour ({int(current_hour):02d}:00)"
+        else:
+            # No data in range, show 0
+            current_hour = "00"
+            current_date = end_date
+            summary["current_hour_label"] = "Peak Hour (No Data)"
+    
     cursor.execute("""
         SELECT COUNT(*) FROM vehicles
         WHERE strftime('%H', timestamp) = ? AND DATE(timestamp) = ? AND location_id = ? AND vehicle_type != 'bus'
-    """, (current_hour, today, location_id))
+    """, (current_hour, current_date, location_id))
     result = cursor.fetchone()
     summary["current_hour"] = result[0] if result else 0
 
@@ -123,17 +176,33 @@ def summary_data(location_id):
 
 @app.route("/api/<location_id>/traffic/vehicle-types")
 def vehicle_types_data(location_id):
-    today = datetime.datetime.now().strftime("%Y-%m-%d")
     conn = sqlite3.connect("vehicle_data.db")
     cursor = conn.cursor()
+
+    # Get date range parameters
+    start_date = request.args.get("start")
+    end_date = request.args.get("end")
+    
+    # If no date range provided, use today
+    if not start_date and not end_date:
+        today = datetime.datetime.now().strftime("%Y-%m-%d")
+        start_date = today
+        end_date = today
+    elif start_date and not end_date:
+        end_date = start_date
+    elif end_date and not start_date:
+        start_date = end_date
+    
+    # Ensure we have valid string values (not None)
+    assert start_date is not None and end_date is not None
 
     vehicle_counts = {"car": 0, "truck": 0, "motorcycle": 0}
 
     cursor.execute("""
         SELECT vehicle_type, COUNT(*) FROM vehicles
-        WHERE DATE(timestamp) = ? AND location_id = ? AND vehicle_type != 'bus'
+        WHERE DATE(timestamp) BETWEEN ? AND ? AND location_id = ? AND vehicle_type != 'bus'
         GROUP BY vehicle_type
-    """, (today, location_id))
+    """, (start_date, end_date, location_id))
 
     results = cursor.fetchall()
     for vehicle_type, count in results:
@@ -145,17 +214,42 @@ def vehicle_types_data(location_id):
 
 @app.route("/api/<location_id>/traffic/hourly")
 def hourly(location_id):
-    date = request.args.get("date", datetime.datetime.now().strftime("%Y-%m-%d"))
     conn = sqlite3.connect("vehicle_data.db")
     cursor = conn.cursor()
 
+    # Get date range parameters
+    start_date = request.args.get("start")
+    end_date = request.args.get("end")
+    
+    # If no date range provided, use today
+    if not start_date and not end_date:
+        today = datetime.datetime.now().strftime("%Y-%m-%d")
+        start_date = today
+        end_date = today
+    elif start_date and not end_date:
+        end_date = start_date
+    elif end_date and not start_date:
+        start_date = end_date
+    
+    # Ensure we have valid string values (not None)
+    assert start_date is not None and end_date is not None
+
     hourly_data = {f"{hour:02d}:00": 0 for hour in range(24)}
 
-    cursor.execute("""
-        SELECT strftime('%H', timestamp), COUNT(*) FROM vehicles
-        WHERE DATE(timestamp) = ? AND location_id = ? AND vehicle_type != 'bus'
-        GROUP BY strftime('%H', timestamp)
-    """, (date, location_id))
+    # If single date, use the original logic
+    if start_date == end_date:
+        cursor.execute("""
+            SELECT strftime('%H', timestamp), COUNT(*) FROM vehicles
+            WHERE DATE(timestamp) = ? AND location_id = ? AND vehicle_type != 'bus'
+            GROUP BY strftime('%H', timestamp)
+        """, (start_date, location_id))
+    else:
+        # For date range, aggregate all hours across the range
+        cursor.execute("""
+            SELECT strftime('%H', timestamp), COUNT(*) FROM vehicles
+            WHERE DATE(timestamp) BETWEEN ? AND ? AND location_id = ? AND vehicle_type != 'bus'
+            GROUP BY strftime('%H', timestamp)
+        """, (start_date, end_date, location_id))
 
     for hour, count in cursor.fetchall():
         hourly_data[f"{int(hour):02d}:00"] = count
@@ -168,16 +262,38 @@ def daily(location_id):
     conn = sqlite3.connect("vehicle_data.db")
     cursor = conn.cursor()
 
+    # Get date range parameters
+    start_date = request.args.get("start")
+    end_date = request.args.get("end")
+    
+    # If no date range provided, use last 7 days
+    if not start_date and not end_date:
+        end_date = datetime.datetime.now().strftime("%Y-%m-%d")
+        start_date = (datetime.datetime.now() - datetime.timedelta(days=6)).strftime("%Y-%m-%d")
+    elif start_date and not end_date:
+        end_date = start_date
+    elif end_date and not start_date:
+        start_date = end_date
+    
+    # Ensure we have valid string values (not None)
+    assert start_date is not None and end_date is not None
+
+    # Generate date range
+    start_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+    end_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+    
     daily_data = {}
-    for i in range(7):
-        date = (datetime.datetime.now() - datetime.timedelta(days=i)).strftime("%Y-%m-%d")
-        daily_data[date] = 0
+    current_date = start_obj
+    while current_date <= end_obj:
+        date_str = current_date.strftime("%Y-%m-%d")
+        daily_data[date_str] = 0
+        current_date += datetime.timedelta(days=1)
 
     cursor.execute("""
         SELECT DATE(timestamp), COUNT(*) FROM vehicles
-        WHERE DATE(timestamp) >= date('now', '-7 days') AND location_id = ? AND vehicle_type != 'bus'
+        WHERE DATE(timestamp) BETWEEN ? AND ? AND location_id = ? AND vehicle_type != 'bus'
         GROUP BY DATE(timestamp)
-    """, (location_id,))
+    """, (start_date, end_date, location_id))
 
     for date, count in cursor.fetchall():
         if date in daily_data:
@@ -189,7 +305,11 @@ def daily(location_id):
     for date in sorted_dates:
         day_obj = datetime.datetime.strptime(date, "%Y-%m-%d")
         day_name = day_obj.strftime("%a") # Mon, Tue, etc.
-        day_names[day_name] = daily_data[date]
+        # If multiple dates have same day name, sum them
+        if day_name in day_names:
+            day_names[day_name] += daily_data[date]
+        else:
+            day_names[day_name] = daily_data[date]
 
     conn.close()
     return jsonify(day_names)
@@ -208,14 +328,14 @@ def open_browser(url):
 
 if __name__ == "__main__":
     init_database()
-    port = find_free_port()
+    port = 5000
     url = f"http://127.0.0.1:{port}"
     print(f"\n🚀 Running Dashboard Frontend on {url}")
     print("   Please open the link above to select a location.")
 
     # Initialize the location config file with a default or clear it
     if not os.path.exists(LOCATION_CONFIG_FILE):
-        write_current_location_to_file(LOCATIONS["Ratanada"]["name"]) # Or any default
+        write_current_location_to_file("Basni Crossing") # Or any default
     else:
         # Optionally clear or set to a known state on app startup
         pass
